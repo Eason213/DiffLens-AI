@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Upload, Layers, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Camera, Upload, Layers, CheckCircle2, AlertCircle, Settings } from 'lucide-react';
 import { IOSButton } from '../components/ui/IOSButton';
 import { DocItem } from '../types';
 
@@ -9,6 +9,7 @@ interface HomeScreenProps {
   onCameraClick: () => void;
   onUploadClick: () => void;
   onAnalyze: () => void;
+  onSettingsClick: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -16,7 +17,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   set2,
   onCameraClick,
   onUploadClick,
-  onAnalyze
+  onAnalyze,
+  onSettingsClick
 }) => {
   const hasFiles = set1.length > 0 && set2.length > 0;
 
@@ -24,11 +26,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     <div className="h-full flex flex-col pt-14 px-6 relative z-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
       
       {/* Header Area */}
-      <div className="mb-10 animate-fade-in">
-        <h1 className="text-4xl font-thin tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500">
-          DiffLens
-        </h1>
-        <p className="text-gray-400 mt-2 text-sm tracking-wide uppercase">AI 智能比對引擎</p>
+      <div className="mb-10 animate-fade-in flex justify-between items-start">
+        <div>
+            <h1 className="text-4xl font-thin tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500">
+            DiffLens
+            </h1>
+            <p className="text-gray-400 mt-2 text-sm tracking-wide uppercase">AI 智能比對引擎</p>
+        </div>
+        <button 
+            onClick={onSettingsClick}
+            className="p-3 bg-ios-surface/50 rounded-full text-gray-400 hover:text-white hover:bg-ios-surface border border-ios-glassBorder transition-all"
+            aria-label="設定"
+        >
+            <Settings size={20} />
+        </button>
       </div>
 
       {/* Status Cards */}

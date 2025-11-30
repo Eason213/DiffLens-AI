@@ -11,12 +11,14 @@ const getMimeType = (b64: string) => {
     return match ? match[1] : 'application/pdf'; // Default to pdf if unknown binary
 };
 
-export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promise<string> => {
-  if (!process.env.API_KEY) {
-    throw new Error("缺少 API Key。");
+// Modified to accept apiKey as an argument
+export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[], apiKey: string): Promise<string> => {
+  
+  if (!apiKey) {
+    throw new Error("未提供 API Key。請在設定中輸入您的 Google Gemini API Key。");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: apiKey });
 
   // Prepare the prompt
   const prompt = `

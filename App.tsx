@@ -4,12 +4,16 @@ import { HomeScreen } from './screens/HomeScreen';
 import { CameraScreen } from './screens/CameraScreen';
 import { UploadScreen } from './screens/UploadScreen';
 import { AnalysisScreen } from './screens/AnalysisScreen';
+import { ApiKeyScreen } from './screens/ApiKeyScreen';
 import { analyzeDocuments } from './services/geminiService';
 import { X } from 'lucide-react';
+
+const STORAGE_KEY = 'gemini_api_key';
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.HOME);
   const [selectedSet, setSelectedSet] = useState<SetType>(SetType.NONE);
+  const [apiKey, setApiKey] = useState<string | null>(null);
   
   // Data State
   const [set1Items, setSet1Items] = useState<DocItem[]>([]);
@@ -21,6 +25,32 @@ const App: React.FC = () => {
     result: null,
     error: null
   });
+
+  // Init: Check local storage for API Key
+  useEffect(() => {
+    const storedKey = localStorage.getItem(STORAGE_KEY);
+    if (storedKey) {
+        setApiKey(storedKey);
+        setCurrentScreen(AppScreen.HOME);
+    } else {
+        setCurrentScreen(AppScreen.API_KEY_INPUT);
+    }
+  }, []);
+
+  // Handlers for API Key
+  const handleSaveKey = (key: string) => {
+      localStorage.setItem(STORAGE_KEY, key);
+      setApiKey(key);
+      setCurrentScreen(AppScreen.HOME);
+  };
+
+  const handleResetKey = () => {
+      if (confirm("確定要重設 API Key 嗎？")) {
+          localStorage.removeItem(STORAGE_KEY);
+          setApiKey(null);
+          setCurrentScreen(AppScreen.API_KEY_INPUT);
+      }
+  };
 
   // Navigation Handlers
   const goHome = () => setCurrentScreen(AppScreen.HOME);
@@ -40,18 +70,24 @@ const App: React.FC = () => {
   };
 
   const startAnalysis = async () => {
+    if (!apiKey) {
+        alert("API Key 遺失，請重新設定");
+        setCurrentScreen(AppScreen.API_KEY_INPUT);
+        return;
+    }
+
     setCurrentScreen(AppScreen.ANALYSIS_RESULT);
     setAnalysis({ isAnalyzing: true, result: null, error: null });
 
     try {
-      const result = await analyzeDocuments(set1Items, set2Items);
+      // Pass the stored API Key to the service
+      const result = await analyzeDocuments(set1Items, set2Items, apiKey);
       setAnalysis({ isAnalyzing: false, result, error: null });
     } catch (error) {
       setAnalysis({ isAnalyzing: false, result: null, error: (error as Error).message || "發生未知錯誤" });
     }
   };
 
-  // 當使用者看完分析報告按下完成時，清空所有資料以供下一次全新使用
   const handleAnalysisComplete = () => {
     setSet1Items([]);
     setSet2Items([]);
@@ -63,7 +99,7 @@ const App: React.FC = () => {
     goHome();
   };
 
-  // Selection Overlay Component (Reused for Camera and Upload)
+  // Selection Overlay Component
   const SelectionOverlay = ({ onSelect, onClose }: { onSelect: (s: SetType) => void, onClose: () => void }) => (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in pb-safe-b">
       <div className="w-full max-w-md bg-ios-surface border border-ios-glassBorder rounded-3xl p-6 relative">
@@ -106,6 +142,10 @@ const App: React.FC = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-900/40 rounded-full blur-[120px]" />
       </div>
 
+      {currentScreen === AppScreen.API_KEY_INPUT && (
+        <ApiKeyScreen onSave={handleSaveKey} />
+      )}
+
       {currentScreen === AppScreen.HOME && (
         <HomeScreen 
           set1={set1Items}
@@ -113,6 +153,7 @@ const App: React.FC = () => {
           onCameraClick={() => setCurrentScreen(AppScreen.CAMERA_SELECTION)}
           onUploadClick={() => setCurrentScreen(AppScreen.UPLOAD_SELECTION)}
           onAnalyze={startAnalysis}
+          onSettingsClick={handleResetKey}
         />
       )}
 
