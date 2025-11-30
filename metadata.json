@@ -1,0 +1,7 @@
+{
+  "name": "DiffLens AI",
+  "description": "使用 Gemini AI 的新一代 iOS 文件比對工具。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
