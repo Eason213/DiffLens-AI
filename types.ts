@@ -15,8 +15,8 @@ export enum SetType {
 
 export interface DocItem {
   id: string;
-  type: 'image' | 'text';
-  content: string; // Base64 for images, string for text
+  type: 'image' | 'text' | 'file'; // 'file' handles PDF, Word, Excel as DataURL
+  content: string; // Base64 for images/files, string for text
   name: string;
   timestamp: number;
 }

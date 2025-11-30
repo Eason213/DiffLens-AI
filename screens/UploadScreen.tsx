@@ -19,21 +19,23 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ currentSet, onBack, 
       const newItems: DocItem[] = [];
 
       for (const file of files) {
-        // Simple mock of file reading. In production, need robust parsers.
         const reader = new FileReader();
+        const isText = file.type.startsWith('text/') || file.name.endsWith('.txt');
+        
         const item: DocItem = {
           id: Math.random().toString(36).substr(2, 9),
           name: file.name,
-          type: file.type.startsWith('image/') ? 'image' : 'text',
+          type: file.type.startsWith('image/') ? 'image' : (isText ? 'text' : 'file'),
           content: '',
           timestamp: Date.now()
         };
 
         const content = await new Promise<string>((resolve) => {
-          if (file.type.startsWith('image/')) {
-            reader.readAsDataURL(file);
-          } else {
+          if (isText) {
             reader.readAsText(file);
+          } else {
+            // Read PDF, Images, Word, Excel as DataURL to preserve binary data
+            reader.readAsDataURL(file);
           }
           reader.onload = (e) => resolve(e.target?.result as string);
         });
@@ -75,7 +77,6 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ currentSet, onBack, 
           onDrop={(e) => {
             e.preventDefault();
             setIsDragging(false);
-            // Drop logic omitted for brevity in file input based solution, user can click
           }}
         >
           <input 
@@ -99,9 +100,9 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ currentSet, onBack, 
         <div className="space-y-3">
           {selectedFiles.map((file, idx) => (
             <div key={file.id} className="bg-ios-surface border border-ios-glassBorder rounded-2xl p-4 flex items-center gap-4 animate-slide-in">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {file.type === 'image' ? (
-                  <img src={file.content} alt="preview" className="w-full h-full object-cover rounded-lg" />
+                  <img src={file.content} alt="preview" className="w-full h-full object-cover" />
                 ) : (
                   <FileText size={20} className="text-gray-400" />
                 )}

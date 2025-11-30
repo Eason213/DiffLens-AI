@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { DocItem } from "../types";
 
 // Helper to clean base64 string
@@ -8,7 +8,7 @@ const cleanBase64 = (b64: string) => {
 
 const getMimeType = (b64: string) => {
     const match = b64.match(/^data:(.*?);base64,/);
-    return match ? match[1] : 'image/jpeg';
+    return match ? match[1] : 'application/pdf'; // Default to pdf if unknown binary
 };
 
 export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promise<string> => {
@@ -23,7 +23,7 @@ export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promis
     你是一位專業的 AI 稽核員與文件分析師。
     你的任務是比對兩組文件（「第一份資料」與「第二份資料」），找出差異、不一致、新增或移除的部分。
     
-    使用者提供了這兩組資料的圖片或文字檔案。
+    使用者提供了這兩組資料的圖片、PDF 或文字檔案。
     
     請提供繁體中文的結構化分析報告：
     1. **摘要**：比對結果的簡要概述。
@@ -37,36 +37,30 @@ export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promis
   // Construct parts
   const parts: any[] = [{ text: prompt }];
 
-  // Add Set 1
-  parts.push({ text: "\n\n--- 第一份資料 (SET 1) ---\n" });
-  for (const doc of set1) {
-    parts.push({ text: `檔案名稱: ${doc.name}\n` });
-    if (doc.type === 'image') {
-      parts.push({
+  const processDoc = (doc: DocItem) => {
+    if (doc.type === 'text') {
+       return { text: `[檔案: ${doc.name}]\n內容:\n${doc.content}\n` };
+    } else {
+       // Handle Image and File (PDF/Doc) as inlineData
+       return {
         inlineData: {
           mimeType: getMimeType(doc.content),
           data: cleanBase64(doc.content),
         },
-      });
-    } else {
-      parts.push({ text: `內容:\n${doc.content}\n` });
+      };
     }
+  };
+
+  // Add Set 1
+  parts.push({ text: "\n\n--- 第一份資料 (SET 1) ---\n" });
+  for (const doc of set1) {
+    parts.push(processDoc(doc));
   }
 
   // Add Set 2
   parts.push({ text: "\n\n--- 第二份資料 (SET 2) ---\n" });
   for (const doc of set2) {
-    parts.push({ text: `檔案名稱: ${doc.name}\n` });
-    if (doc.type === 'image') {
-      parts.push({
-        inlineData: {
-          mimeType: getMimeType(doc.content),
-          data: cleanBase64(doc.content),
-        },
-      });
-    } else {
-      parts.push({ text: `內容:\n${doc.content}\n` });
-    }
+    parts.push(processDoc(doc));
   }
 
   try {
@@ -74,12 +68,19 @@ export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promis
       model: 'gemini-2.5-flash',
       contents: { parts },
       config: {
-        thinkingConfig: { thinkingBudget: 0 } // Disable thinking for faster response on this task type
+        thinkingConfig: { thinkingBudget: 0 },
+        // Set safety settings to BLOCK_NONE to avoid false positives on document content
+        safetySettings: [
+          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        ]
       }
     });
 
     if (!response.candidates || response.candidates.length === 0) {
-        throw new Error("AI 未返回任何候選回應 (可能因安全性過濾)。");
+        throw new Error("AI 未返回任何候選回應 (可能因安全性過濾，請檢查檔案內容)。");
     }
 
     if (!response.text) {
