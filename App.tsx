@@ -47,7 +47,7 @@ const App: React.FC = () => {
       const result = await analyzeDocuments(set1Items, set2Items);
       setAnalysis({ isAnalyzing: false, result, error: null });
     } catch (error) {
-      setAnalysis({ isAnalyzing: false, result: null, error: (error as Error).message });
+      setAnalysis({ isAnalyzing: false, result: null, error: (error as Error).message || "發生未知錯誤" });
     }
   };
 
@@ -65,7 +65,7 @@ const App: React.FC = () => {
 
   // Selection Overlay Component (Reused for Camera and Upload)
   const SelectionOverlay = ({ onSelect, onClose }: { onSelect: (s: SetType) => void, onClose: () => void }) => (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in pb-safe-b">
       <div className="w-full max-w-md bg-ios-surface border border-ios-glassBorder rounded-3xl p-6 relative">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400">
            <X size={24} />
@@ -99,7 +99,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="w-full h-screen bg-black text-white overflow-hidden font-sans">
+    <div className="w-full h-full bg-black text-white overflow-hidden font-sans">
       {/* Background Gradient Mesh */}
       <div className="fixed inset-0 pointer-events-none opacity-30">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-900/40 rounded-full blur-[120px]" />
@@ -149,6 +149,7 @@ const App: React.FC = () => {
       {currentScreen === AppScreen.ANALYSIS_RESULT && (
         <AnalysisScreen 
           result={analysis.result}
+          error={analysis.error}
           isAnalyzing={analysis.isAnalyzing}
           onBack={handleAnalysisComplete}
         />

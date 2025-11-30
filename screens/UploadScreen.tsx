@@ -64,7 +64,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ currentSet, onBack, 
       </div>
 
       {/* Upload Area */}
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-40">
         <div 
           className={`
             border-2 border-dashed rounded-3xl p-8 text-center transition-all mb-6
@@ -118,8 +118,8 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ currentSet, onBack, 
         </div>
       </div>
 
-      {/* Footer Action */}
-      <div className="absolute bottom-10 left-6 right-6">
+      {/* Footer Action - Fixed Bottom with Safe Area */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black to-transparent pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <IOSButton onClick={handleFinish} disabled={selectedFiles.length === 0} variant="primary">
           確認上傳 ({selectedFiles.length})
         </IOSButton>

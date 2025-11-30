@@ -1,14 +1,15 @@
 import React from 'react';
-import { ArrowLeft, Share2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Share2, Sparkles, AlertTriangle } from 'lucide-react';
 import { IOSButton } from '../components/ui/IOSButton';
 
 interface AnalysisScreenProps {
   result: string | null;
+  error: string | null;
   isAnalyzing: boolean;
   onBack: () => void;
 }
 
-export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ result, isAnalyzing, onBack }) => {
+export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ result, error, isAnalyzing, onBack }) => {
   
   if (isAnalyzing) {
     return (
@@ -44,26 +45,38 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ result, isAnalyz
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="prose prose-invert prose-sm max-w-none">
-          {/* Simple Markdown Rendering */}
-          {result ? (
-            result.split('\n').map((line, index) => {
-              if (line.startsWith('###')) return <h3 key={index} className="text-lg font-bold text-white mt-6 mb-2">{line.replace('###', '')}</h3>;
-              if (line.startsWith('##')) return <h2 key={index} className="text-xl font-bold text-ios-blue mt-8 mb-4">{line.replace('##', '')}</h2>;
-              if (line.startsWith('**')) return <strong key={index} className="block mt-4 text-white">{line.replace(/\*\*/g, '')}</strong>;
-              if (line.startsWith('- ')) return <li key={index} className="ml-4 text-gray-300 list-disc my-1">{line.replace('- ', '')}</li>;
-              return <p key={index} className="text-gray-400 leading-relaxed my-2">{line}</p>;
-            })
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                <p>無分析結果。</p>
+      <div className="flex-1 overflow-y-auto p-6 pb-32"> {/* Extra padding bottom for safe scroll */}
+        {error ? (
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 text-red-500">
+               <AlertTriangle size={32} />
             </div>
-          )}
-        </div>
+            <h3 className="text-xl font-medium text-white mb-2">分析失敗</h3>
+            <p className="text-gray-400 max-w-xs">{error}</p>
+            <button onClick={onBack} className="mt-6 text-ios-blue hover:underline">返回並重試</button>
+          </div>
+        ) : (
+          <div className="prose prose-invert prose-sm max-w-none">
+            {/* Simple Markdown Rendering */}
+            {result ? (
+              result.split('\n').map((line, index) => {
+                if (line.startsWith('###')) return <h3 key={index} className="text-lg font-bold text-white mt-6 mb-2">{line.replace('###', '')}</h3>;
+                if (line.startsWith('##')) return <h2 key={index} className="text-xl font-bold text-ios-blue mt-8 mb-4">{line.replace('##', '')}</h2>;
+                if (line.startsWith('**')) return <strong key={index} className="block mt-4 text-white">{line.replace(/\*\*/g, '')}</strong>;
+                if (line.startsWith('- ')) return <li key={index} className="ml-4 text-gray-300 list-disc my-1">{line.replace('- ', '')}</li>;
+                return <p key={index} className="text-gray-400 leading-relaxed my-2">{line}</p>;
+              })
+            ) : (
+              <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                  <p>無分析結果。</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
-      <div className="p-6 bg-black border-t border-gray-800">
+      {/* Bottom Bar with Safe Area */}
+      <div className="p-6 bg-black border-t border-gray-800 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <IOSButton onClick={onBack} variant="secondary">完成</IOSButton>
       </div>
     </div>

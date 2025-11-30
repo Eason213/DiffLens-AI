@@ -78,9 +78,17 @@ export const analyzeDocuments = async (set1: DocItem[], set2: DocItem[]): Promis
       }
     });
 
-    return response.text || "無法產生分析結果。";
+    if (!response.candidates || response.candidates.length === 0) {
+        throw new Error("AI 未返回任何候選回應 (可能因安全性過濾)。");
+    }
+
+    if (!response.text) {
+        throw new Error("AI 回應內容為空。");
+    }
+
+    return response.text;
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
-    throw new Error("文件分析失敗，請重試。");
+    throw new Error(`分析失敗: ${(error as Error).message}`);
   }
 };

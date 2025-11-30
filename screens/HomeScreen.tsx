@@ -21,7 +21,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const hasFiles = set1.length > 0 && set2.length > 0;
 
   return (
-    <div className="h-full flex flex-col pt-14 px-6 pb-10 relative z-10">
+    <div className="h-full flex flex-col pt-14 px-6 relative z-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
       
       {/* Header Area */}
       <div className="mb-10 animate-fade-in">

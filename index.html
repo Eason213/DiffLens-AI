@@ -28,6 +28,9 @@
                 surface: '#1C1C1E',
               }
             },
+            spacing: {
+              'safe-b': 'env(safe-area-inset-bottom)',
+            },
             backdropBlur: {
               xs: '2px',
             },
@@ -66,8 +69,8 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-black text-white antialiased select-none overflow-hidden touch-none">
-    <div id="root"></div>
+  <body class="bg-black text-white antialiased select-none overflow-hidden touch-none h-[100dvh]">
+    <div id="root" class="h-full"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

@@ -122,7 +122,7 @@ export const CameraScreen: React.FC<CameraScreenProps> = ({ currentSet, onBack, 
       </div>
 
       {/* Controls Area */}
-      <div className="h-48 bg-black flex flex-col justify-center px-8 relative z-10">
+      <div className="bg-black flex flex-col justify-center px-8 relative z-10 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
         <div className="flex justify-between items-center">
             {/* Thumbnail / Count */}
             <div className="w-14 h-14 bg-gray-900 rounded-lg overflow-hidden border border-gray-800 flex items-center justify-center relative">
@@ -154,7 +154,7 @@ export const CameraScreen: React.FC<CameraScreenProps> = ({ currentSet, onBack, 
             </button>
         </div>
         
-        <div className="text-center mt-4">
+        <div className="text-center mt-4 h-5">
              <p className="text-gray-500 text-xs uppercase tracking-widest">
                  {capturedItems.length === 0 ? "準備拍攝" : "AI 自動排序啟用中"}
              </p>
